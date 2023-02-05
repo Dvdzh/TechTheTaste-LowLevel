@@ -1,0 +1,3 @@
+/home/hawa/INTech/TechTheTaste-LowLevel/src/asserv/build/pioasm/CMakeFiles/pioasm.dir
+/home/hawa/INTech/TechTheTaste-LowLevel/src/asserv/build/pioasm/CMakeFiles/edit_cache.dir
+/home/hawa/INTech/TechTheTaste-LowLevel/src/asserv/build/pioasm/CMakeFiles/rebuild_cache.dir
