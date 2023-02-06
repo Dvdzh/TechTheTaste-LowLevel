@@ -1,3 +1,0 @@
-repository='https://github.com/raspberrypi/pico-sdk.git'
-module=''
-tag='origin'
