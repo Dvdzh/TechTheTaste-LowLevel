@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <function.h>
-#include <com_lib.h>
+#include <com.h>
 
 static char ordermotors[5]={0x70,0x00,0x00,0x00,0x00}; 
 static uint nbmotors=0;
@@ -94,6 +94,47 @@ void track( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	
 	
 	}
+
+void mainprocess(){
+	
+	void (*fonction[16]) (unsigned int comp, unsigned short arg0, unsigned short arg1) = {
+		*lidarStop,
+		*move, 
+		*rotate,
+		*cancelMove,
+		*motorValue,
+		*motorTime,
+		*pumps,	
+		*motors,
+		*motorsArgs,
+		*setVar,
+		*getVar,
+		*track,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+		};
+
+
+	BufferInit(&buffer);
+	uartInit();
+	uartIrqSetup();
+    while (1) {
+		if(buffer.BufferOrderNumber>orderExecuted){
+			int flag=!ReadNewOrder(order,&buffer);
+			id = getID(order[0]);
+			comp = getCOMP(order[0]);
+			arg0 = (((unsigned short) order[1]) << 8) + ((unsigned short) order[2]);
+			arg1 = (((unsigned short) order[3]) << 8) + ((unsigned short) order[4]);
+			if(flag){
+				fonction[id](comp,arg0,arg1);
+				orderExecuted++;
+			}
+		}
+	}
+}
+
 
 
 

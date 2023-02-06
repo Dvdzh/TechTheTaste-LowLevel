@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
-#include <com_lib.h>
+#include <com.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

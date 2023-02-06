@@ -10,7 +10,7 @@ void motorsArgs( unsigned int comp, unsigned short arg0, unsigned short arg1);
 void setVar( unsigned int comp, unsigned short arg0, unsigned short arg1);
 void getVar( unsigned int comp, unsigned short arg0, unsigned short arg1);
 void track( unsigned int comp, unsigned short arg0, unsigned short arg1);
-
+void mainprocess();
 
 
 	
