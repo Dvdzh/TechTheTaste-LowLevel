@@ -38,13 +38,13 @@ void read_encoder (uint gpio , uint32_t events){
     if (gpio == Signal_A_Right){
         event_R=events;
     }
-
+//settings 1a
     if (gpio==Signal_B_Right){
         if (events == event_R ){
-            increase(&counter_Right);
+            decrease(&counter_Right);
         }
         else {
-            decrease(&counter_Right);
+            increase(&counter_Right);
         }
     }
 
@@ -54,10 +54,10 @@ void read_encoder (uint gpio , uint32_t events){
 
     if (gpio==Signal_B_Left){
         if (events == event_L ){
-            increase(&counter_Left);
+            decrease(&counter_Left);
         }
         else {
-            decrease(&counter_Left);
+            increase(&counter_Left);
         }
     }
 

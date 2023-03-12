@@ -5,9 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "hardware/regs/intctrl.h"
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
+#include "pico/time.h"
+#include <encoder.h>
+#include <PID.h>
+#include <motor.h>       
+#include <motion.h>
+
 
 CircularBuffer buffer;
 char order[5];
@@ -16,7 +23,9 @@ unsigned int id=0;
 unsigned int comp=0;
 unsigned short arg0=0;
 unsigned short arg1=0;
-
+static char ordercancelmove[5]={0x30,0x00,0x00,0x00,0x00};
+static char orderlidarstop[5]={0x00,0x00,0x00,0x00,0x00};
+static int first = 1;
 
 
 
@@ -26,7 +35,7 @@ unsigned short arg1=0;
 #define BAUD_RATE 115200
 #define DATA_BITS 8
 #define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
+#define PARITY UART_PARITY_NONE
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
@@ -40,13 +49,13 @@ void uartInit(){ // Setup uart parameters
     uart_set_baudrate(UART_ID, BAUD_RATE);
     uart_set_hw_flow(UART_ID, false, false);
     uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
-    uart_set_fifo_enabled(UART_ID, false);
+    uart_set_fifo_enabled(UART_ID, true);
     }
 
 void uartIrqSetup(){ //Setup receive irq on byts 
     int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
     irq_set_exclusive_handler(UART_IRQ, receive);
-    irq_set_enabled(UART_IRQ, true);
+    irq_set_enabled(UART0_IRQ, true);
     uart_set_irq_enables(UART_ID, true, false);
  
 	}
@@ -55,31 +64,65 @@ void uartIrqSetup(){ //Setup receive irq on byts
 /* Routine used for communication wich deal with uart*/
 
 
-void receive() { //receive data and write the buffer 
+void receive() {//receive data and write the buffer
 	volatile char ch=uart_getc(UART_ID);
 	WriteBuffer(ch,&buffer);
+	if(((buffer.Head)%5-1)==0){
+		int idirq=getID(ch);
+		if(idirq==0){
+				acknowledge(orderlidarstop);
+				lidar=!lidar;
+				finish(orderlidarstop);
+		}
+		else if(idirq==3){
+				acknowledge(ordercancelmove);
+				cancelmove=1;
+	
+		}
+	}
 }
 
 void acknowledge(char order[5]){ //acknowledgement for recieved order 
-	uart_putc(UART_ID,order[0]>>4);
+	uart_putc_raw(UART_ID,order[0]>>4);
 	for(int k=0; k<4;k++){
 		uart_putc(UART_ID, 0x00);
 		}
 	}
 
 void finish(char order[5]){ //acknowledgement for finished order 
-	uart_putc(UART_ID,0x10+(order[0]>>4));
+	uart_putc_raw(UART_ID,0x10+(order[0]>>4));
 	for(int k=0; k<4;k++){
 		uart_putc(UART_ID, 0x00);
 		}
 	}
+
+void sendVar(int data, int id, int comp){
+	char byt1 = data >> 24;
+	char byt2 = (data>>16)&0xFF;
+	char byt3 = (data>>8)&0xFF;
+	char byt4 = data&0xFF;
+	uart_putc(UART_ID,(id<<4)+comp);
+	uart_putc(UART_ID,byt1);
+	uart_putc(UART_ID,byt2);
+	uart_putc(UART_ID,byt3);
+	uart_putc(UART_ID,byt4);
+}
+
+bool sendtrack(struct repeating_timer *t){
+	uart_putc(UART_ID,0x50);
+	uart_putc(UART_ID,((unsigned short) counter_Left >> 8 ) & 0xFF);
+	uart_putc(UART_ID,((unsigned short)counter_Left) & 0xFF);
+	uart_putc(UART_ID,((unsigned short) counter_Right >> 8) & 0xFF);
+	uart_putc(UART_ID,((unsigned short)counter_Right) & 0XFF);
+	return true;
+}
 	
 /*Buffer management routines*/
 
 void BufferInit(CircularBuffer *Buffer){ //init buffer parameter
 	Buffer->Head=0;
 	Buffer->Tail=0;
-	Buffer->BufferSize=25;
+	Buffer->BufferSize=1000;
 	Buffer->BufferFullFlag=0;
 	Buffer->BufferEmptyFlag=1;
 	Buffer->BufferOrderNumber=0;
@@ -113,7 +156,6 @@ int IsBufferEmpty(CircularBuffer *Buffer){ //check if the buffer is empty and up
 	return temp;
 	}
 
-
 int ReadBuffer(char *data,  CircularBuffer *Buffer){ //read the buffer and update related flags
 	if(IsBufferEmpty(Buffer)){
 		return 1;
@@ -125,6 +167,7 @@ int ReadBuffer(char *data,  CircularBuffer *Buffer){ //read the buffer and updat
 		return 0;
 		}
 	}
+
 
 int ReadNewOrder(char order[5],CircularBuffer *Buffer ){ //extract order from the buffer 
 	int result=0;
@@ -168,17 +211,17 @@ unsigned int getARG(unsigned int double_octet){
     return double_octet >> 0;
 	}
 
-float getARG_float(unsigned short buffer_reception[])
-{
-    unsigned short id = getID(buffer_reception[0]);
-    unsigned short comp = getCOMP(buffer_reception[0]);
-
-    unsigned short arg0 = (((unsigned short) buffer_reception[1]) << 8) + ((unsigned short) buffer_reception[2]);
-    unsigned short arg1 = (((unsigned short) buffer_reception[3]) << 8) + ((unsigned short) buffer_reception[4]);
+float getFloat(unsigned short arg0, unsigned short arg1){
+	
     unsigned int tmp = (((unsigned int) arg0) << 16) + (unsigned int) arg1;
     float floatArg = *(float*) &tmp; //chelou
 
     return floatArg;
+}
+
+int getInt(float floatArg){
+	int intarg=*(int*)&floatArg;
+	return intarg;
 }
 
 
@@ -186,9 +229,6 @@ float getARG_float(unsigned short buffer_reception[])
 
 
 
-
-
-	
 	
 	
 	
