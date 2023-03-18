@@ -1,3 +1,4 @@
+#include <inttypes.h>
 typedef struct{
 	int id;
 	int dirPin;
@@ -16,11 +17,14 @@ typedef struct{
 	int pin;
 	}endstop;
 
+
+extern stepper steppers[8];
+
 double clockDivider(int speed);
 int wrapCalculator(int speed);
 void endstoprise(uint gpio , uint32_t event_mask);
 int homming(stepper *stepper, endstop *endstop,int dir);
-int endstopInit(endstop *endstop);
+int endstopInit(endstop *endstop, int pin, int axis);
 int maskMotor(stepper *motor);
 void stepperCountDown();
 int irqPwmSetup();

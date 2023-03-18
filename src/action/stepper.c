@@ -15,11 +15,12 @@
 
 
 static int count[8] = {0,0,0,0,0,0,0,0};
-static stepper motors[8];
+stepper steppers[8];
 static endstop endstops[8];
 static uint motormask = 0;
 static int homed = 0;
 static char ordermotors[5]={0x70,0x00,0x00,0x00,0x00}; 
+static int debug=0;
 
 double clockDivider(int speed){
 	return ceil(125000000.0/(speed*4096))/16;
@@ -36,10 +37,11 @@ void endstoprise(uint gpio ,uint32_t event_mask){
 	while(endstops[k].pin!=gpio){
 		k++;
 	}
-	while(endstops[k].axis!=motors[i].axis){
+	while(endstops[k].axis!=steppers[i].axis){
 		i++;
 	}
-	pwm_set_enabled(motors[i].pwmSlice,false);
+	pwm_set_enabled(steppers[i].pwmSlice,false);
+	gpio_set_irq_enabled(gpio,event_mask,false);
 }
 
 
@@ -55,10 +57,13 @@ int homming(stepper *stepper, endstop *endstop,int dir){
 
 }
 
-int endstopInit(endstop *endstop){
-	gpio_set_function(endstop->pin,GPIO_FUNC_SIO);
-	gpio_set_dir(endstop->pin, false);
-	gpio_pull_down(endstop->pin);
+int endstopInit(endstop *endstop,int pin,int axis){
+	endstop->pin=pin;
+	endstop->axis=axis;
+	gpio_set_function(pin,GPIO_FUNC_SIO);
+	gpio_set_dir(pin, false);
+	gpio_pull_down(pin);
+	endstops[axis-1]=*endstop;
 }
 
 
@@ -76,17 +81,21 @@ void stepperCountDown(){
 			pwm_clear_irq(k);
 			if(count[k]>0){
 				count[k]--;
+				
 			}
 			else{
-				tozero++;
 				pwm_set_irq_enabled(k,false);	
 				pwm_set_enabled(k,false);
+				tozero++;
 			}
+		}
+		else{
+			tozero++;
 		}
 		mask=mask>>1;
 	}
 	if(tozero==8){
-		finish(ordermotors);
+		debug=1;
 	}
 }
 
@@ -104,6 +113,7 @@ int irqStepperSetup(stepper *stepper){
 }
 
 int stepperInit(stepper *stepper,int id,int dirPin, int stepPin, int speed,int axis){
+	stepper->axis=axis;
 	stepper->id=id; 
 	stepper->dirPin=dirPin;
 	stepper->stepPin=stepPin;
@@ -115,9 +125,8 @@ int stepperInit(stepper *stepper,int id,int dirPin, int stepPin, int speed,int a
 	gpio_set_dir(dirPin, GPIO_OUT);
 	stepper->pwmSlice=pwm_gpio_to_slice_num(stepPin);
 	stepper->pwmChan=pwm_gpio_to_channel(stepPin);
-	motors[id-1]=*stepper;
+	steppers[id-1]=*stepper;
 	maskMotor(stepper);
-	stepper->axis=axis;
 	return 0;
 }
 
@@ -162,9 +171,9 @@ int armMove(int target[]){
 	}
 	stepper motor1;
 	stepper motor2;
-	stepperInit(&motor1,1,7,6,450,1);
-	stepperInit(&motor2,2,9,8,450,2);
-	motorValueStepper(motors,id,dir,utarget,2);
+	stepperInit(&motor1,1,7,6,10,1);
+	stepperInit(&motor2,2,9,8,10,2);
+	motorValueStepper(steppers,id,dir,utarget,2);
 }
 
 
