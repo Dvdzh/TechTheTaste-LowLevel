@@ -1,7 +1,5 @@
-
 #include "hardware/gpio.h"
 #include "hardware/regs/intctrl.h"
-#include "pico/platform.h"
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "hardware/irq.h"
@@ -13,24 +11,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <com.h>
-
-typedef struct{
-	int id;
-	int dirPin;
-	int stepPin;
-	int position;
-	int dir;
-	int target;
-	int speed;
-	int pwmSlice;
-	int pwmChan;
-	int axis; 
-	}stepper; 
-
-typedef struct{
-	int axis;
-	int pin;
-	}endstop;
+#include<stepper.h>
 
 
 static int count[8] = {0,0,0,0,0,0,0,0};
@@ -187,8 +168,6 @@ int armMove(int target[]){
 }
 
 
-
-int main() {
 	/*stepper motors1;
 	stepper motors2;
 	int id[2] = {1,2};
@@ -203,17 +182,6 @@ int main() {
 		sleep_ms(1000);
 		motorValueStepper(motors,id,dir1,target);
 		sleep_ms(1000);
-	}
 
-	*/
-    gpio_init(7);
-    gpio_set_dir(7, GPIO_OUT);
-    while (true) {
-        gpio_put(7, 1);
-        sleep_ms(250);
-        gpio_put(7, 0);
-        sleep_ms(250);
-    }
-}
-
+*/
 

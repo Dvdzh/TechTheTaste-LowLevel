@@ -13,7 +13,7 @@
 #include <motor.h>
 #include <PID.h>
 #include <motion.h>
-
+#include <stepper.h>
 
 static char ordermotors[5]={0x70,0x00,0x00,0x00,0x00}; 
 static uint nbmotors=0;
@@ -93,8 +93,13 @@ void  pumps( unsigned int comp, unsigned short arg0, unsigned short arg1){
 
 
 void  motors( unsigned int comp, unsigned short arg0, unsigned short arg1){
-	acknowledge(order);
-	nbmotors=comp;
+	acknowledge(order);	
+	int target[2]={arg0,arg1};
+	armMove(target);
+
+
+	/*	acknowledge(order);
+	nbmotors=comp;*/
 	
 }
 
