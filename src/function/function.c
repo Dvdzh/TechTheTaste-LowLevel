@@ -14,12 +14,12 @@
 #include <PID.h>
 #include <motion.h>
 #include <stepper.h>
-
+float vitesse = 450;
 static char ordermotors[5]={0x70,0x00,0x00,0x00,0x00}; 
 static uint nbmotors=0;
 static short positionmotors[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static uint nbordermotors=0;
-static float *pid[16]={&kP_right,&kD_right,&kI_right,&kP_left,&kD_left,&kI_left,&kP_trans,&kD_trans,&kI_trans,&kP_rot,&kD_rot,&kI_rot,NULL,NULL,NULL,NULL};
+static float *pid[16]={&kP_right,&kD_right,&kI_right,&kP_left,&kD_left,&kI_left,&kP_trans,&kD_trans,&kI_trans,&kP_rot,&kD_rot,&kI_rot,&vitesse,NULL,NULL,NULL};
 static char ordercancelmove[5]={0x30,0x00,0x00,0x00,0x00};
 static char orderlidarstop[5]={0x00,0x00,0x00,0x00,0x00};
 static int curve=0;
@@ -73,10 +73,10 @@ void cancelMove( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	}
 
 
-void motorValue( unsigned int comp, unsigned short arg0, unsigned short arg1){
+void arm( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	acknowledge(order);
-	sleep_ms(2000);
-	finish(order);
+	int target[2]={(short) arg0, (short) arg1};
+	armMove(target,(int)vitesse);
 	}
 	
 
@@ -95,7 +95,6 @@ void  pumps( unsigned int comp, unsigned short arg0, unsigned short arg1){
 void  motors( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	acknowledge(order);	
 	int target[2]={arg0,arg1};
-	armMove(target);
 
 
 	/*	acknowledge(order);
@@ -152,7 +151,7 @@ void mainprocess(){
 		*move, 
 		*rotatefunction,
 		NULL,
-		*motorValue,
+		*arm,
 		*motorTime,
 		*pumps,	
 		*motors,

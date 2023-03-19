@@ -32,4 +32,4 @@ int irqStepperSetup(stepper *stepper);
 int stepperInit(stepper *stepper,int id,int dirPin, int stepPin, int speed,int axis);
 int home(stepper stepper[],endstop endstop[], int dir [],int orderlenght);
 int motorValueStepper(stepper motors[],int id[], int dir[], int target[],int orderlenght);
-int armMove(int target[]);
+int armMove(int target[],int speed);

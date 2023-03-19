@@ -19,7 +19,7 @@ stepper steppers[8];
 static endstop endstops[8];
 static uint motormask = 0;
 static int homed = 0;
-static char ordermotors[5]={0x70,0x00,0x00,0x00,0x00}; 
+static char armorder[5]={0x40,0x00,0x00,0x00,0x00}; 
 static int debug=0;
 
 double clockDivider(int speed){
@@ -95,7 +95,7 @@ void stepperCountDown(){
 		mask=mask>>1;
 	}
 	if(tozero==8){
-		debug=1;
+		finish(armorder);
 	}
 }
 
@@ -156,7 +156,7 @@ int motorValueStepper(stepper motors[],int id[], int dir[], int target[],int ord
 	return 0;
 }
 
-int armMove(int target[]){
+int armMove(int target[],int speed){
 	int utarget[2]={0,0};
 	int dir[2]={0,0};
 	int id[2]={1,2};
@@ -171,8 +171,8 @@ int armMove(int target[]){
 	}
 	stepper motor1;
 	stepper motor2;
-	stepperInit(&motor1,1,7,6,10,1);
-	stepperInit(&motor2,2,9,8,10,2);
+	stepperInit(&motor1,1,7,6,speed,1);
+	stepperInit(&motor2,2,9,8,speed,2);
 	motorValueStepper(steppers,id,dir,utarget,2);
 }
 

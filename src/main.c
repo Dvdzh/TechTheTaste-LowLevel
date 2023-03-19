@@ -12,7 +12,7 @@ int main(){
 		*move, 
 		*rotatefunction,
 		*cancelMove,
-		*motorValue,
+		*arm,
 		*motorTime,
 		*pumps,	
 		*motors,

@@ -5,7 +5,7 @@
 
 
 int main(){
-	int target[2]={100,100};
+	int target[2]={800,800};
 	int target1[2]={-100,-100};
 	stepper stepper2;
 	endstop endstop1;
@@ -13,23 +13,9 @@ int main(){
 	endstop endstop2;
 	endstopInit(&endstop1,10,1);
 	endstopInit(&endstop2,11,2);
-	stepperInit(&stepper1,2,9,8,10,1);
-	stepperInit(&stepper2,1,7,6,10,2);
-	homming(&stepper2,&endstop1,1);
-	homming(&stepper1,&endstop2,1);
-	sleep_ms(10000);
-	armMove(target);
-	sleep_ms(15000);
-	armMove(target1);
-
-
-
-
-
-
-
-
-
+	stepperInit(&stepper1,2,9,8,450,1);
+	stepperInit(&stepper2,1,7,6,450,2);
+	homming(&stepper2,&endstop2,2);
 
 
 
