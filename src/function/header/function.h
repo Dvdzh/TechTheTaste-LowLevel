@@ -13,6 +13,62 @@ void track( unsigned int comp, unsigned short arg0, unsigned short arg1);
 void mainprocess();
 
 
-	
+
 	
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#error "Mange tes morts"
