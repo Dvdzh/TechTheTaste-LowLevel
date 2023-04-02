@@ -38,7 +38,7 @@ void move( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	acknowledge(order);
 	init_all_enc_mot();
 	init_interrupt();
-	while(1){
+	while(translate((short) arg1)){
 		move_translate((short) arg1);
 		if(cancelmove){
 			move_translate((short) arg1);
@@ -50,11 +50,11 @@ void move( unsigned int comp, unsigned short arg0, unsigned short arg1){
 }
 
 
-void rotatefunction( unsigned int comp, unsigned short arg0, unsigned short arg1){
+void rotatefunction( unsigned int comp,unsigned short arg0, unsigned short arg1){
 	acknowledge(order);
 	init_all_enc_mot();
 	init_interrupt();
-	while(1){
+	while(rotate((short) arg1)){
 		move_rotate((short) arg1);
 		if(cancelmove){
 			move_rotate((short) arg1);

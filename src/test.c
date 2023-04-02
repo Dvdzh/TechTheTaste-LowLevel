@@ -1,21 +1,32 @@
-#include "pico/platform.h"
 #include "pico/time.h"
-#include <stepper.h>
 #include <pico/stdlib.h>
+#include <math.h>
+#include "hardware/pwm.h"
+
+double clockDivider(int speed){
+	return ceil(125000000.0/(speed*4096))/16;
+}
+
+int	wrapCalculator(int speed){
+	double clkfreq = 125000000*16/ceil(125000000.0/(speed*4096));
+	return floor(clkfreq/speed);
+}
+
+
 
 
 int main(){
-	int target[2]={800,800};
-	int target1[2]={-100,-100};
-	stepper stepper2;
-	endstop endstop1;
-	stepper stepper1;
-	endstop endstop2;
-	endstopInit(&endstop1,10,1);
-	endstopInit(&endstop2,11,2);
-	stepperInit(&stepper1,2,9,8,450,1);
-	stepperInit(&stepper2,1,7,6,450,2);
-	homming(&stepper2,&endstop2,2);
+	gpio_set_function(7, GPIO_FUNC_PWM);
+	int pwmSlice=pwm_gpio_to_slice_num(7);
+	int pwmChan=pwm_gpio_to_channel(7);
+	for(int k=0;k<5000;k+=10){
+		int wrap=2;
+		pwm_set_clkdiv(pwmSlice,100);
+		pwm_set_wrap(pwmSlice,wrap);
+		pwm_set_chan_level(pwmSlice,pwmChan,wrap/2);
+		pwm_set_enabled(pwmSlice,true);
+		sleep_ms(1000);
+	}
 
 
 
@@ -24,21 +35,6 @@ int main(){
 
 
 
-
-
-	/*stepper motors1;
-	stepper motors2;
-	int id[2] = {1,2};
-	int dir[2] = {0,0};
-	int dir1[2] = {0,1};
-	int target[2] = {100,100};
-	stepperInit(&motors1,1,7,6,10,5);
-	stepperInit(&motors2,2,9,8,10,5);
-	motorValueStepper(steppers,id,dir,target,2);
-	sleep_ms(20000);
-	motorValueStepper(steppers,id,dir1,target,2);
-	sleep_ms(20000);
-	motorValueStepper(steppers,id,dir,target,2);*/
 	while(1){
 	tight_loop_contents();
 	}
