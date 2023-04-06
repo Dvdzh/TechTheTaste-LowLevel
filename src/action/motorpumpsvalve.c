@@ -3,25 +3,38 @@
 #include "hardware/pwm.h"
 #include "pico/time.h"
 #include "hardware/gpio.h"
-#include  "header/motorpumpsvalve.h"
 
-extern action pumplist[2];
-extern action valvelist[2];
-extern action motorlist[2];
+typedef struct{
+	int pin;
+	int id;
+	int pwm;
+	int type;
+	struct repeating_timer pwmmotor;
+}action;
+
+action pumplist[2];
+action valvelist[2];
+action motorlist[2];
 int motorpwmlevel[2]={0,0};
+
 
 
 bool pwmrampe(struct repeating_timer *t){
 	for(int k=0;k<8;k++){
-		if(&motorlist[k]==t->user_data){
-			if(motorpwmlevel[k]<6250){
-				motorpwmlevel[k]+=50;
+		if(&motorlist[k].id==t->user_data){
+			if(motorpwmlevel[k]<2000){
+				motorpwmlevel[k]+=10;
 				int sliceNum = pwm_gpio_to_slice_num(motorlist[k].pin);
 				int chan = pwm_gpio_to_channel(motorlist[k].pin); 
 				pwm_set_chan_level(sliceNum,chan,motorpwmlevel[k]);
 			}
+			else{
+				cancel_repeating_timer(t);
+			}
+
 		}
 	}
+	return true;
 }
 
 
@@ -44,8 +57,7 @@ int actionGpioInit(action *action,int pin,int id,int pwm,int type){
 			action->type=2;
 			action->pwm=0;
 			action->id=id;
-			motorlist[id-1]=*action;
-			break;
+					break;
 	}
 	if(pwm) {
 		action->pwm=1;
@@ -56,6 +68,8 @@ int actionGpioInit(action *action,int pin,int id,int pwm,int type){
 		gpio_set_dir(action->pin,GPIO_OUT);
 		gpio_put(action->pin,0);
 	}
+	motorlist[id-1]=*action;
+
 	return 0;
 }
 
@@ -83,7 +97,7 @@ int updateMotor(uint8_t mask){
 				pwm_set_wrap(sliceNum,6250);                                //we set the wrap at 6250 for a frequency of 20kHz
 				pwm_set_chan_level(sliceNum,channel,0);
 				pwm_set_enabled(sliceNum,true);
-				add_repeating_timer_ms(100,pwmrampe,&motorlist[k].id,&motorlist[k].pwmmotor);
+				add_repeating_timer_ms(10,pwmrampe,&motorlist[k].id,&motorlist[k].pwmmotor);
 			}
 			else{
 				pwm_set_enabled(sliceNum,false);
@@ -106,7 +120,18 @@ int actionInit1A(){
 int actionInit2A(){
 }
 
-
+int main(){
+	action motor1;
+	action motor2;
+	actionGpioInit(&motor1,0,1,1,2);
+	actionGpioInit(&motor2,1,2,1,2);
+	updateMotor(3);
+	sleep_ms(10000);
+	updateMotor(0);
+	updateMotor(2);
+	sleep_ms(10000);
+	updateMotor(0);
+}
 
 
 
