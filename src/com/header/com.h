@@ -16,6 +16,7 @@ extern unsigned int id;
 extern unsigned int comp;
 extern unsigned short arg0;
 extern unsigned short arg1;
+extern int sync;
 
 bool sendtrack(struct repeating_timer *t);
 void uartInit();
@@ -37,6 +38,6 @@ unsigned int getCOMP(unsigned int octet0);
 unsigned int getARG(unsigned int double_octet);
 float getFloat(unsigned short arg0 , unsigned short arg1);
 int getInt(float floatArg);
-
+int tabEqual(char tab1[10], char tab2[10]);
 
 

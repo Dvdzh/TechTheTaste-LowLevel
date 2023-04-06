@@ -5,6 +5,4 @@ add_subdirectory(function)
 add_executable(Asserv main.c)
 target_link_libraries(Asserv function com)
 pico_add_extra_outputs(Asserv)
-add_executable(test test.c)
-target_link_libraries(test action pico_stdlib)
-pico_add_extra_outputs(test)
+

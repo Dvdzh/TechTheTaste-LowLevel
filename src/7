@@ -17,7 +17,7 @@
 
 
 CircularBuffer buffer;
-char syncBuffer[10] ={0,0,0,0,0,0,0,0,0,0};
+char syncBuffer[10];
 char order[5];
 int orderExecuted=0;
 unsigned int id=0;
@@ -27,8 +27,8 @@ unsigned short arg1=0;
 static char ordercancelmove[5]={0x30,0x00,0x00,0x00,0x00};
 static char orderlidarstop[5]={0x00,0x00,0x00,0x00,0x00};
 static int first = 1;
-static char syncBuffertype[10] = { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6 , 0xf7, 0xf8, 0xf9};
-int sync = 0;
+static int sync=0;
+
 
 
 /*definition of uart communication parameter */
@@ -67,12 +67,7 @@ void uartIrqSetup(){ //Setup receive irq on byts
 
 void receive() {//receive data and write the buffer
 	volatile char ch=uart_getc(UART_ID);
-	for(int k=0;k<9;k++){
-		syncBuffer[k]=syncBuffer[k+1];
-
-	}
-	syncBuffer[9]=ch;
-	sync=tabEqual(syncBuffer,syncBuffertype);
+	syncBuffer[sync]=ch;
 	WriteBuffer(ch,&buffer);
 	if(((buffer.Head)%5-1)==0){
 		int idirq=getID(ch);
@@ -87,6 +82,8 @@ void receive() {//receive data and write the buffer
 	
 		}
 	}
+
+	sync++;
 }
 
 void acknowledge(char order[5]){ //acknowledgement for recieved order 
@@ -126,17 +123,14 @@ bool sendtrack(struct repeating_timer *t){
 	
 /*Buffer management routines*/
 
-void BufferInit(CircularBuffer *Buffer){ //init buffer parameter	
+void BufferInit(CircularBuffer *Buffer){ //init buffer parameter
 	Buffer->Head=0;
 	Buffer->Tail=0;
 	Buffer->BufferSize=1000;
 	Buffer->BufferFullFlag=0;
 	Buffer->BufferEmptyFlag=1;
 	Buffer->BufferOrderNumber=0;
-	for(int k=0;k<Buffer->BufferSize;k++){
-		Buffer->Buffer[k]=0;
-	}
-};
+	};
 
 int WriteBuffer(char data, CircularBuffer *Buffer){ //write buffer and update related flags
 	if(Buffer->BufferFullFlag){ 
@@ -235,13 +229,6 @@ int getInt(float floatArg){
 }
 
 
-int tabEqual(char tab1[10], char tab2[10]){	
-	int nbs=0;
-	for(int k=0;k<10;k++){
-		nbs+=(tab1[k]==tab2[k])?1:0;
-	}
-	return nbs==10?1:0;
-}
 
 
 

@@ -140,6 +140,11 @@ void track( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	finish(order);
 }
 
+void trololol(unsigned int comp, unsigned short arg0, unsigned short arg1){
+	int a=2; 
+	a++;
+}
+
 
 void mainprocess(){
 
