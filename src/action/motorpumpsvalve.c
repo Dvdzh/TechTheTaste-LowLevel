@@ -12,9 +12,9 @@ typedef struct{
 	struct repeating_timer pwmmotor;
 }action;
 
-action pumplist[2];
-action valvelist[2];
-action motorlist[2];
+action pumplist[10];
+action valvelist[10];
+action motorlist[10];
 int motorpwmlevel[2]={0,0};
 
 
@@ -67,14 +67,15 @@ int actionGpioInit(action *action,int pin,int id,int pwm,int type){
 		gpio_init(action->pin);
 		gpio_set_dir(action->pin,GPIO_OUT);
 		gpio_put(action->pin,0);
+		gpio_is_pulled_down(action->pin);
 	}
 	motorlist[id-1]=*action;
 
 	return 0;
 }
 
-int updatePumpValve(uint8_t mask, int type){
-	for(int k=0;k<2;k++){
+int updatePumpValve(uint8_t mask, int type,int lenght){
+	for(int k=0;k<lenght;k++){
 		volatile int state=mask&1;
 		if(type==0){
 			gpio_put(pumplist[k].pin,state);
@@ -87,8 +88,8 @@ int updatePumpValve(uint8_t mask, int type){
 	return 0;
 }
 
-int updateMotor(uint8_t mask){
-	for(int k=0;k<2;k++){
+int updateMotor(uint8_t mask,int lenght){
+	for(int k=0;k<lenght;k++){
 		int state=mask&1;
 		if(motorlist[k].pwm==1){
 			int sliceNum= pwm_gpio_to_slice_num(motorlist[k].pin);
@@ -114,23 +115,14 @@ int updateMotor(uint8_t mask){
 
 
 int actionInit1A(){
+	action pump1;
+	action valve1;
+	actionGpioInit(&pump1,13,1,0,0);
+	actionGpioInit(&valve1,18,1,0,1);
 
 }
 
 int actionInit2A(){
-}
-
-int main(){
-	action motor1;
-	action motor2;
-	actionGpioInit(&motor1,0,1,1,2);
-	actionGpioInit(&motor2,1,2,1,2);
-	updateMotor(3);
-	sleep_ms(10000);
-	updateMotor(0);
-	updateMotor(2);
-	sleep_ms(10000);
-	updateMotor(0);
 }
 
 

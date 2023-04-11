@@ -14,7 +14,7 @@ int main(){
 		*cancelMove,
 		*arm,
 		*motorTime,
-		*pumps,	
+		*pumpsvalvemotors,	
 		*motors,
 		*motorsArgs,
 		*setVar,
@@ -22,8 +22,8 @@ int main(){
 		*track,
 		NULL,
 		NULL,
-		NULL,
-		*trololol
+		*identification,
+		*syncro
 		};
 			
 	BufferInit(&buffer);

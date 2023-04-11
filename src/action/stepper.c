@@ -171,8 +171,8 @@ int armMove(int target[],int speed){
 	}
 	stepper motor1;
 	stepper motor2;
-	stepperInit(&motor1,1,7,6,speed,1);
-	stepperInit(&motor2,2,9,8,speed,2);
+	stepperInit(&motor1,1,16,17,speed,1);
+	stepperInit(&motor2,2,15,14,speed,2);
 	motorValueStepper(steppers,id,dir,utarget,2);
 }
 

@@ -16,3 +16,11 @@ typedef struct{
 bool pwmrampe(struct repeating_timer *t);
 
 int actionGpioInit(action *action,int pin,int id,int pwm,int type);
+
+int updatePumpValve(uint8_t mask, int type,int lenght);
+
+int updateMotor(uint8_t mask,int lenght);
+
+int actionInit1A();
+
+int actionInit2A();

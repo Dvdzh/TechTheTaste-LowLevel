@@ -14,6 +14,8 @@
 #include <PID.h>
 #include <motion.h>
 #include <stepper.h>
+#include <motorpumpsvalve.h>
+
 float vitesse = 450;
 static char ordermotors[5]={0x70,0x00,0x00,0x00,0x00}; 
 static uint nbmotors=0;
@@ -86,9 +88,24 @@ void motorTime( unsigned int comp, unsigned short arg0, unsigned short arg1){
 }
 
 
-void  pumps( unsigned int comp, unsigned short arg0, unsigned short arg1){
-	
-	
+void  pumpsvalvemotors( unsigned int comp, unsigned short arg0, unsigned short arg1){
+	acknowledge(order);
+	actionInit1A();
+	uint8_t pumpmask=arg1&0xFF;
+	uint8_t valvemask=arg0&0XFF;
+	uint8_t motormask=(arg1>>8)&0XFF;
+	switch (comp) {
+		case 1:
+			updatePumpValve(pumpmask,0,1);
+		break;
+		case 2:
+			updatePumpValve(valvemask,1,1);
+		break;
+		case 3:
+			updateMotor(motormask,0);
+		break;
+	}
+	finish(order);
 }
 
 
@@ -140,7 +157,13 @@ void track( unsigned int comp, unsigned short arg0, unsigned short arg1){
 	finish(order);
 }
 
-void trololol(unsigned int comp, unsigned short arg0, unsigned short arg1){
+void identification(unsigned int comp, unsigned short arg0, unsigned short arg1){
+	acknowledge(order);
+	ident(1);
+}
+
+
+void syncro(unsigned int comp, unsigned short arg0, unsigned short arg1){
 	int a=2; 
 	a++;
 }
@@ -158,7 +181,7 @@ void mainprocess(){
 		NULL,
 		*arm,
 		*motorTime,
-		*pumps,	
+		*pumpsvalvemotors,	
 		*motors,
 		*motorsArgs,
 		*setVar,

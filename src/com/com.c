@@ -243,7 +243,10 @@ int tabEqual(char tab1[10], char tab2[10]){
 	return nbs==10?1:0;
 }
 
-
+int ident(int type){
+	uart_putc(UART_ID, type);
+	return 0;
+}
 
 
 	
