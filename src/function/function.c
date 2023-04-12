@@ -76,7 +76,8 @@ void cancelMove( unsigned int comp, unsigned short arg0, unsigned short arg1){
 
 
 void arm( unsigned int comp, unsigned short arg0, unsigned short arg1){
-	acknowledge(order);
+	static char orderarm[5]={0x40,0x00,0x00,0x00,0x00};
+	acknowledge(orderarm);
 	int target[2]={(short) arg0, (short) arg1};
 	armMove(target,(int)vitesse);
 	}

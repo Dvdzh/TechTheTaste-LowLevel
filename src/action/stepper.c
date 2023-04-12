@@ -21,6 +21,7 @@ static uint motormask = 0;
 static int homed = 0;
 static char armorder[5]={0x40,0x00,0x00,0x00,0x00}; 
 static int debug=0;
+static int irqsetup=1;
 
 double clockDivider(int speed){
 	return ceil(125000000.0/(speed*4096))/16;
@@ -83,19 +84,21 @@ void stepperCountDown(){
 				count[k]--;
 				
 			}
-			else{
+			if(count[k]==0){
 				pwm_set_irq_enabled(k,false);	
 				pwm_set_enabled(k,false);
 				tozero++;
 			}
 		}
-		else{
+		else if(count[k]==0){
 			tozero++;
 		}
 		mask=mask>>1;
 	}
 	if(tozero==8){
 		finish(armorder);
+		irq_set_enabled(PWM_IRQ_WRAP,false);
+		irq_remove_handler(PWM_IRQ_WRAP,stepperCountDown);
 	}
 }
 
@@ -123,6 +126,7 @@ int stepperInit(stepper *stepper,int id,int dirPin, int stepPin, int speed,int a
 	gpio_set_function(stepper->stepPin, GPIO_FUNC_PWM);
 	gpio_init(dirPin);
 	gpio_set_dir(dirPin, GPIO_OUT);
+	gpio_pull_down(dirPin);
 	stepper->pwmSlice=pwm_gpio_to_slice_num(stepPin);
 	stepper->pwmChan=pwm_gpio_to_channel(stepPin);
 	steppers[id-1]=*stepper;
@@ -136,12 +140,12 @@ int home(stepper stepper[],endstop endstop[], int dir [],int orderlenght){
 }
 
 int motorValueStepper(stepper motors[],int id[], int dir[], int target[],int orderlenght){
+	irqPwmSetup();
 	for(int k=0;k<orderlenght;k++){
 		for( int i=0;i<8;i++){
 			if(id[k]==motors[i].id){
 				motors[i].dir=dir[k];
 				gpio_put(motors[i].dirPin,dir[k]);
-				irqPwmSetup();
 				irqStepperSetup(&motors[i]);
 				count[motors[i].pwmSlice]=target[k];
 				pwm_set_clkdiv(motors[i].pwmSlice,clockDivider(motors[i].speed));
